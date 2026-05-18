@@ -80,7 +80,7 @@ const categories = [
 
 export default function FindWorkPage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-6 py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold dark:text-white text-zinc-900 mb-1">Найти работу</h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm">Актуальные заказы от клиентов по всему городу</p>

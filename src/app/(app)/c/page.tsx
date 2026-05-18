@@ -23,7 +23,7 @@ const quickActions = [
 
 export default function DashboardPage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="mx-auto px-6 py-10">
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold dark:text-white text-zinc-900 mb-1">Добро пожаловать 👋</h1>

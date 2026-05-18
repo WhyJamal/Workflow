@@ -27,7 +27,7 @@ function StarRating({ count }: { count: number }) {
 
 export default function ProfilePage() {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-6 py-10">
       {/* Profile Header */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 mb-6">
         <div className="flex items-start justify-between flex-wrap gap-4">
