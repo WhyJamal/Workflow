@@ -1,5 +1,7 @@
+import { PAGES } from "@/config/pages.config";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "Upwork – Auth",
@@ -17,15 +19,15 @@ export default function AuthLayout({
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Upwork logo */}
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded flex items-center justify-center">
+                        <Link href={PAGES.HOME} className="w-8 h-8 rounded flex items-center justify-center gap-2">
                             <Image
                                 src='/logos/logo.green.jpg'
                                 alt="logo"
                                 width={50}
                                 height={50}
                             />
-                        </div>
-                        <span className="text-xl font-semibold">Workflow</span>
+                            <span className="text-xl font-semibold">Workflow</span>
+                        </Link>
                     </div>
 
                     {/* Right side links - shown differently on sign-in vs sign-up */}

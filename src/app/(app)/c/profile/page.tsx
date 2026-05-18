@@ -1,3 +1,7 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+
 const skills = ["Next.js", "React", "TypeScript", "Tailwind CSS", "Node.js", "PostgreSQL", "Figma", "Git"];
 
 const portfolio = [
@@ -26,6 +30,8 @@ function StarRating({ count }: { count: number }) {
 }
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
       {/* Profile Header */}
@@ -33,10 +39,10 @@ export default function ProfilePage() {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-5">
             <div className="w-20 h-20 rounded-full bg-linear-to-br from-[#14a800] to-emerald-600 flex items-center justify-center text-white text-2xl font-bold">
-              АМ
+              {session?.user?.name?.split(" ").map((n) => n[0]).join("")}
             </div>
             <div>
-              <h1 className="text-xl font-bold dark:text-white text-zinc-900">Алишер Маматов</h1>
+              <h1 className="text-xl font-bold dark:text-white text-zinc-900">{session?.user?.name}</h1>
               <p className="text-zinc-500 dark:text-zinc-400 text-sm">Fullstack-разработчик · Ташкент</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">

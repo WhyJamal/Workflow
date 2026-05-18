@@ -54,7 +54,7 @@ export default function SignInCard() {
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
       <h1 className="text-2xl font-semibold text-gray-900 text-center mb-6">
-        Log in to Upwork
+        Log in to Workflow
       </h1>
 
       {serverError && (
@@ -165,7 +165,7 @@ export default function SignInCard() {
 
       {/* Sign up link */}
       <div className="mt-8 text-center space-y-2">
-        <p className="text-sm text-gray-500">Don&apos;t have an Upwork account?</p>
+        <p className="text-sm text-gray-500">Don&apos;t have an Workflow account?</p>
         <Link
           href="/sign-up"
           className="inline-block border border-[#14a800] text-[#14a800] font-semibold text-sm px-8 py-2 rounded-full hover:bg-[#f2fdf0] transition-colors"

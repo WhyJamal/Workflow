@@ -356,7 +356,7 @@ export default function SignUpCard() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Upwork Terms of Service
+                Workflow Terms of Service
               </a>
               , including the{" "}
               <a
@@ -365,7 +365,7 @@ export default function SignUpCard() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                User Agreement
+                Workflow User Agreement
               </a>{" "}
               and{" "}
               <a
