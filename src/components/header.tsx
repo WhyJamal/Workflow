@@ -10,13 +10,14 @@ import {
     NavigationMenuTrigger,
     NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
-import { NAV_ITEMS } from "@/config/header.config";
+import { getNavItems } from "@/config/header.config";
 import { LAN_NAV_ITEMS } from "@/config/lan.header.config";
 import { ThemeToggle } from "./theme-toggle";
 import { Logo } from "./logo";
 import { PAGES } from "@/config/pages.config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AccountDropdown } from "./accaount-dropdown";
+import { getUserInitials } from "@/lib/get-user-initials";
 
 interface HeaderProps {
     isLandingPage?: boolean;
@@ -26,15 +27,13 @@ export async function Header({ isLandingPage }: HeaderProps) {
     const session = await auth();
     const user = session?.user;
 
-    const navItems = isLandingPage ? LAN_NAV_ITEMS : NAV_ITEMS;
+    const navItems = isLandingPage
+        ? LAN_NAV_ITEMS
+        : getNavItems(user?.role as "CLIENT" | "MASTER");
 
     const linkBase = isLandingPage
         ? "inline-flex h-10 items-center rounded-md px-4 py-2 text-sm font-medium transition-colors dark:text-zinc-200 text-white/80 hover:text-white hover:bg-white/10"
         : "inline-flex h-10 items-center rounded-md px-4 py-2 text-sm font-medium transition-colors dark:text-zinc-200 hover:bg-zinc-100 hover:text-black dark:hover:bg-zinc-700 dark:hover:text-white";
-
-    const initials = user
-        ? `${user.firstName?.charAt(0) ?? ""}${user.lastName?.charAt(0) ?? ""}`.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || "U"
-        : "U";
 
     return (
         <nav className="flex items-center justify-between w-full">
@@ -63,7 +62,7 @@ export async function Header({ isLandingPage }: HeaderProps) {
                                                     </NavigationMenuTrigger>
                                                     <NavigationMenuContent className="p-2">
                                                         {item.items.map((subItem) => (
-                                                            <NavigationMenuLink className="w-32" key={subItem.href} href={subItem.href}>
+                                                            <NavigationMenuLink className="w-55" key={subItem.href} href={subItem.href}>
                                                                 {subItem.label}
                                                             </NavigationMenuLink>
                                                         ))}
@@ -86,18 +85,14 @@ export async function Header({ isLandingPage }: HeaderProps) {
 
             <div className="flex items-center gap-4">
                 {user ? (
-                    <>
-                        {!isLandingPage && <ThemeToggle />}
-                        <AccountDropdown>
-                            <Avatar>
-                                <AvatarImage src={user.image ?? ""} alt={user.name ?? "User"} />
-                                <AvatarFallback>{initials}</AvatarFallback>
-                            </Avatar>
-                        </AccountDropdown>
-                    </>
+                    <AccountDropdown>
+                        <Avatar>
+                            <AvatarImage src={user.image ?? ""} alt={user.name ?? "User"} />
+                            <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+                        </Avatar>
+                    </AccountDropdown>
                 ) : (
                     <>
-                        {!isLandingPage && <ThemeToggle />}
                         <Link
                             href={PAGES.SIGN_IN}
                             className={

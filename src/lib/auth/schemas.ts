@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { USER_ROLES } from "@/types/user.type";
 
 export const emailSchema = z
   .string()
@@ -13,6 +14,10 @@ export const passwordSchema = z
 export const signInSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+});
+
+export const userRoleSchema = z.enum(USER_ROLES, {
+  message: "Роль должна быть CLIENT или MASTER",
 });
 
 export const signUpSchema = z
@@ -34,7 +39,7 @@ export const signUpSchema = z
     password: passwordSchema,
 
     confirmPassword: z.string(),
-
+    role: userRoleSchema,
     acceptTerms: z.literal(true, {
       message: "Вы должны принять условия",
     }),

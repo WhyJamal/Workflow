@@ -167,7 +167,7 @@ export default function SignInCard() {
       <div className="mt-8 text-center space-y-2">
         <p className="text-sm text-gray-500">Don&apos;t have an Workflow account?</p>
         <Link
-          href="/sign-up"
+          href={PAGES.SIGN_UP}
           className="inline-block border border-[#14a800] text-[#14a800] font-semibold text-sm px-8 py-2 rounded-full hover:bg-[#f2fdf0] transition-colors"
         >
           Sign Up

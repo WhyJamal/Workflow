@@ -80,7 +80,7 @@ export default function TestimonialsSection() {
               className="bg-white/4 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
+                <div className={`w-11 h-11 rounded-full bg-linear-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
                   {t.avatar}
                 </div>
                 <div>

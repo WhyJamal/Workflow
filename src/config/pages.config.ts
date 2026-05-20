@@ -17,6 +17,15 @@ export const PAGES = {
     SIGN_IN: "/sign-in",
     SIGN_UP: "/sign-up",
 
+    // Client portal
+    CLIENT_APP: "/cl",
+    CLIENT_POST_JOB: "/cl/post-job",
+    CLIENT_MY_JOBS: "/cl/my-jobs",
+    CLIENT_FIND_MASTERS: "/cl/find-masters",
+    CLIENT_MESSAGES: "/cl/messages",
+
+    JOB: (JobId: string) => `${PAGES.CLIENT_MY_JOBS}/${JobId}`,
+
     HOW_IT_WORKS: "/#how-it-works",
     CATEGORIES: "/#categories",
     FOR_MASTERS: "/#for-masters",

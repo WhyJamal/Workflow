@@ -7,6 +7,7 @@ import { authConfig } from "@/config/auth.config";
 import { prisma } from "@/lib/prisma";
 import { signInSchema } from "@/lib/auth/schemas";
 import { verifyPassword } from "@/lib/password";
+import { TUserRole } from "./types/user.type";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -68,7 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = user.role as TUserRole;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
       }
@@ -77,7 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as TUserRole;
         session.user.firstName = token.firstName as string | null;
         session.user.lastName = token.lastName as string | null;
       }

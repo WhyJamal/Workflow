@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { firstName, lastName, email, password } = parsed.data;
+    const { firstName, lastName, email, password, role } = parsed.data;
 
     const existing = await prisma.user.findUnique({
       where: { email },
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     if (existing) {
       return NextResponse.json(
-        { message: "Bu email allaqachon ro'yxatdan o'tgan" },
+        { message: "This email is already registered." },
         { status: 409 }
       );
     }
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
         name: `${firstName} ${lastName}`.trim(),
         email,
         password: passwordHash,
+        role
       },
     });
 
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     );
   } catch {
     return NextResponse.json(
-      { message: "Server xatosi" },
+      { message: "Server error" },
       { status: 500 }
     );
   }

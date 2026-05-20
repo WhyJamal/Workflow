@@ -1,3 +1,5 @@
+import { PAGES } from "@/config/pages.config";
+
 const benefits = [
   {
     icon: (
@@ -55,7 +57,7 @@ export default function ForMastersSection() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="/sign-up"
+                href={PAGES.SIGN_UP}
                 className="inline-flex items-center justify-center gap-2 bg-[#14a800] hover:bg-[#108a00] text-white font-semibold px-8 py-4 rounded-full transition-colors"
               >
                 Стать специалистом

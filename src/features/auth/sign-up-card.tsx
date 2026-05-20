@@ -4,11 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpInput } from "@/lib/auth/schemas";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { PAGES } from "@/config/pages.config";
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function SignUpCard() {
   const router = useRouter();
@@ -18,6 +27,7 @@ export default function SignUpCard() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
@@ -30,6 +40,7 @@ export default function SignUpCard() {
       email: "",
       password: "",
       confirmPassword: "",
+      role: undefined,
       acceptTerms: undefined,
     },
   });
@@ -157,9 +168,8 @@ export default function SignUpCard() {
             <input
               {...register("firstName")}
               type="text"
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${
-                errors.firstName ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.firstName ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.firstName && (
               <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
@@ -172,9 +182,8 @@ export default function SignUpCard() {
             <input
               {...register("lastName")}
               type="text"
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${
-                errors.lastName ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.lastName ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.lastName && (
               <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
@@ -190,9 +199,8 @@ export default function SignUpCard() {
           <input
             {...register("email")}
             type="email"
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.email ? "border-red-500" : "border-gray-300"
+              }`}
           />
           {errors.email && (
             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
@@ -224,9 +232,8 @@ export default function SignUpCard() {
             <input
               {...register("password")}
               type={showPassword ? "text" : "password"}
-              className={`w-full px-4 py-3 pr-12 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full px-4 py-3 pr-12 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.password ? "border-red-500" : "border-gray-300"
+                }`}
             />
             <button
               type="button"
@@ -285,9 +292,8 @@ export default function SignUpCard() {
           <input
             {...register("confirmPassword")}
             type="password"
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${
-              errors.confirmPassword ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
+              }`}
           />
           {errors.confirmPassword && (
             <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
@@ -328,6 +334,37 @@ export default function SignUpCard() {
               </svg>
             </div>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Role
+          </label>
+
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="CLIENT">CLIENT</SelectItem>
+                    <SelectItem value="MASTER">MASTER</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          />
+
+          {errors.role && (
+            <p className="text-red-500 text-xs mt-1">{errors.role.message}</p>
+          )}
         </div>
 
         {/* Checkboxes */}

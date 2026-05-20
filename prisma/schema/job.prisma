@@ -1,0 +1,74 @@
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Category {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+  icon String?
+
+  jobs Job[]
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  budget      String
+  budgetMin   Float?
+  budgetMax   Float?
+  deadline    String
+  status      JobStatus @default(OPEN)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  clientId   String
+  client     User   @relation("ClientJobs", fields: [clientId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  applications  JobApplication[]
+  savedBy       SavedJob[]
+  conversations Conversation[]
+}
+
+model JobApplication {
+  id          String            @id @default(cuid())
+  coverLetter String?
+  proposedPrice Float?
+  status      ApplicationStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  masterId String
+  master   User   @relation("MasterApplications", fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, masterId])
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+}

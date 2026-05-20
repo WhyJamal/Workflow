@@ -1,43 +1,13 @@
 import Link from "next/link";
 import { PAGES } from "@/config/pages.config";
+import { getSavedJobs } from "@/actions/saved-job.actions";
+import { UnsaveButton } from "./unsave-button";
+import type { TSavedJobCard } from "@/types/ui.type";
+import { Calendar, Star, Users } from "lucide-react";
 
-const savedJobs = [
-  {
-    id: 1,
-    title: "Создание мобильного приложения iOS/Android",
-    category: "IT и разработка",
-    budget: "5 000 000 – 10 000 000 сум",
-    deadline: "2 месяца",
-    proposals: 6,
-    savedAt: "2 часа назад",
-    client: { name: "TechStart UZ", rating: 4.8 },
-    desc: "Разработка кросс-платформенного приложения на React Native для доставки еды. Дизайн готов.",
-  },
-  {
-    id: 2,
-    title: "SEO-оптимизация сайта",
-    category: "IT и разработка",
-    budget: "400 000 – 800 000 сум",
-    deadline: "1 месяц",
-    proposals: 13,
-    savedAt: "вчера",
-    client: { name: "Mirzo Online", rating: 4.6 },
-    desc: "Нужна полная SEO-оптимизация интернет-магазина: аудит, семантика, On-page оптимизация, отчёты.",
-  },
-  {
-    id: 3,
-    title: "Преподаватель по рисованию (онлайн)",
-    category: "Репетиторы и обучение",
-    budget: "80 000 – 120 000 сум / занятие",
-    deadline: "Постоянно",
-    proposals: 5,
-    savedAt: "3 дня назад",
-    client: { name: "Камола Юнусова", rating: 5.0 },
-    desc: "Ищу преподавателя по скетчингу и акварели для 10-летнего ребёнка. 2 раза в неделю по 1 часу.",
-  },
-];
+export default async function SavedJobsPage() {
+  const savedJobs = await getSavedJobs();
 
-export default function SavedJobsPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
@@ -64,9 +34,9 @@ export default function SavedJobsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {savedJobs.map((job) => (
+          {savedJobs.map((job: TSavedJobCard) => (
             <div
-              key={job.id}
+              key={job.savedId}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 hover:border-[#14a800]/40 transition-all"
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -80,20 +50,32 @@ export default function SavedJobsPage() {
                   <h3 className="font-semibold dark:text-white text-zinc-900 mb-1">{job.title}</h3>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3 line-clamp-2">{job.desc}</p>
                   <div className="flex items-center gap-4 text-xs text-zinc-400">
-                    <span>⭐ {job.client.name} ({job.client.rating})</span>
-                    <span>📅 {job.deadline}</span>
-                    <span>👥 {job.proposals} откликов</span>
+                    <span className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      {job.client.name} ({job.client.rating})
+                    </span>
+
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4 text-zinc-500" />
+                      {job.deadline}
+                    </span>
+
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-zinc-500" />
+                      {job.proposals} откликов
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-[#14a800] font-semibold text-sm mb-3">{job.budget}</p>
                   <div className="flex gap-2 justify-end">
-                    <button className="text-xs border border-zinc-200 dark:border-zinc-700 text-zinc-400 hover:text-red-500 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors">
-                      Удалить
-                    </button>
-                    <button className="text-xs bg-[#14a800] hover:bg-[#108a00] text-white px-4 py-1.5 rounded-lg transition-colors font-medium">
+                    <UnsaveButton jobId={job.id} />
+                    <Link
+                      href={PAGES.FIND_WORK}
+                      className="text-xs bg-[#14a800] hover:bg-[#108a00] text-white px-4 py-1.5 rounded-lg transition-colors font-medium"
+                    >
                       Откликнуться
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

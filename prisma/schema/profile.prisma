@@ -1,0 +1,50 @@
+model MasterProfile {
+  id          String  @id @default(cuid())
+  bio         String?
+  title       String?
+  city        String?
+  hourlyRate  Float?
+  minBudget   Float?
+  isVerified  Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  skills     MasterSkill[]
+  portfolio  PortfolioItem[]
+}
+
+model MasterSkill {
+  id   String @id @default(cuid())
+  name String
+
+  profileId String
+  profile   MasterProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model PortfolioItem {
+  id          String  @id @default(cuid())
+  title       String
+  category    String?
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  profileId String
+  profile   MasterProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  text      String?
+  createdAt DateTime @default(now())
+
+  masterId String
+  master   User   @relation("ReviewsReceived", fields: [masterId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("ReviewsGiven", fields: [authorId], references: [id], onDelete: Cascade)
+}
