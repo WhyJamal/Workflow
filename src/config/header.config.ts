@@ -21,6 +21,10 @@ export function getNavItems(role?: UserRole): NavItem[] {
         title: "Сообщения",
         link: PAGES.CLIENT_MESSAGES,
       },
+      {
+        title: "Paботы",
+        link: PAGES.WORKS,
+      }
     ];
   }
 
@@ -41,5 +45,9 @@ export function getNavItems(role?: UserRole): NavItem[] {
       title: "Сообщения",
       link: PAGES.MESSAGES,
     },
+    {
+      title: "Paботы",
+      link: PAGES.WORKS,
+    }
   ];
 }

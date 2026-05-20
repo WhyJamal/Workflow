@@ -18,6 +18,7 @@ import { PAGES } from "@/config/pages.config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AccountDropdown } from "./accaount-dropdown";
 import { getUserInitials } from "@/lib/get-user-initials";
+import { Button } from "./ui/button";
 
 interface HeaderProps {
     isLandingPage?: boolean;
@@ -85,7 +86,7 @@ export async function Header({ isLandingPage }: HeaderProps) {
 
             <div className="flex items-center gap-4">
                 {user ? (
-                    <AccountDropdown>
+                    <AccountDropdown user={user}>
                         <Avatar>
                             <AvatarImage src={user.image ?? ""} alt={user.name ?? "User"} />
                             <AvatarFallback>{getUserInitials(user)}</AvatarFallback>

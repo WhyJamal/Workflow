@@ -30,6 +30,9 @@ model User {
   applications JobApplication[] @relation("MasterApplications")
   savedJobs    SavedJob[]
 
+  works       Work[]
+  workLikes   WorkLike[]
+
   conversations ConversationParticipant[]
   messages      Message[]
 

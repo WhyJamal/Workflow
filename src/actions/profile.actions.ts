@@ -5,8 +5,33 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import type { TMasterProfileWithRelations } from "@/types/prisma.type";
 import { PAGES } from "@/config/pages.config";
+import { getWorks, type WorkWithDetails } from "@/actions/work.actions";
 
-export async function getMasterProfile(userId?: string) {
+export type MasterProfilePageData = {
+  id: string;
+  name: string;
+  image: string | null;
+  role: string;
+  bio: string;
+  title: string;
+  city: string;
+  hourlyRate: number | null | undefined;
+  minBudget: number | null | undefined;
+  isVerified: boolean;
+  skills: string[];
+  portfolio: { id: string; title: string; category: string | null; description: string | null; imageUrl: string | null }[];
+  reviews: { id: string; name: string; rating: number; text: string; date: string }[];
+  works: WorkWithDetails[];
+  stats: {
+    completedJobs: number;
+    avgRating: number;
+    reviewsCount: number;
+    yearsOnPlatform: string;
+    worksCount: number;
+  };
+} | null;
+
+export async function getMasterProfile(userId?: string): Promise<MasterProfilePageData> {
   const session = await auth();
   const targetId = userId ?? session?.user?.id;
   if (!targetId) return null;
@@ -37,14 +62,17 @@ export async function getMasterProfile(userId?: string) {
 
   if (!user) return null;
 
-  const completedJobs = await prisma.job.count({
-    where: {
-      applications: {
-        some: { masterId: targetId, status: "ACCEPTED" },
+  const [completedJobs, works] = await Promise.all([
+    prisma.job.count({
+      where: {
+        applications: {
+          some: { masterId: targetId, status: "ACCEPTED" },
+        },
+        status: "COMPLETED",
       },
-      status: "COMPLETED",
-    },
-  });
+    }),
+    getWorks(targetId),
+  ]);
 
   const avgRating =
     user.reviewsReceived.length > 0
@@ -81,11 +109,13 @@ export async function getMasterProfile(userId?: string) {
         year: "numeric",
       }),
     })),
+    works,
     stats: {
       completedJobs,
       avgRating,
       reviewsCount: user._count.reviewsReceived,
       yearsOnPlatform: yearsOnPlatform > 0 ? `${yearsOnPlatform} ${yearsOnPlatform === 1 ? "год" : "года"}` : "менее года",
+      worksCount: works.length,
     },
   };
 }
@@ -114,7 +144,6 @@ export async function updateProfile(data: {
     },
   });
 
-  // Upsert master profile
   const profile = await prisma.masterProfile.upsert({
     where: { userId: session.user.id },
     create: {
@@ -134,7 +163,6 @@ export async function updateProfile(data: {
     },
   });
 
-  // Update skills
   if (skills !== undefined) {
     await prisma.masterSkill.deleteMany({ where: { profileId: profile.id } });
     if (skills.length > 0) {

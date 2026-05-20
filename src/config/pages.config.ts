@@ -12,6 +12,8 @@ export const PAGES = {
 
     MESSAGES: "/c/messages",
 
+    WORKS: "/c/works",
+    
     PROFILE: "/c/profile",
 
     SIGN_IN: "/sign-in",

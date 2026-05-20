@@ -7,6 +7,9 @@ import {
     MasterSkill,
     Review,
     SavedJob,
+    WorkLike,
+    WorkMedia,
+    Work,
 } from "@/generated/prisma/client";
 
 export type TUser = User;
@@ -16,6 +19,9 @@ export type TMasterProfile = MasterProfile;
 export type TMasterSkill = MasterSkill;
 export type TReview = Review;
 export type TSavedJob = SavedJob;
+export type TWork = Work;
+export type TWorkMedia = WorkMedia;
+export type TWorkLike = WorkLike;
 
 export type TJobWithRelations = Prisma.JobGetPayload<{
     include: {
@@ -201,4 +207,42 @@ export type TSavedJobWithRelations =
                 };
             };
         };
-    }>;    
+    }>;
+
+export type TWorkWithRelations = Prisma.WorkGetPayload<{
+    include: {
+        author: {
+            select: {
+                id: true;
+                name: true;
+                image: true;
+                masterProfile: {
+                    select: {
+                        title: true;
+                    };
+                };
+            };
+        };
+        
+        likes: {
+            select: {
+                userId: true,
+            },
+        },
+
+        media: {
+            orderBy: {
+                order: "asc";
+            };
+        };
+        _count: {
+            select: {
+                likes: true;
+            };
+        };
+    };
+}>;
+
+export type TWorkFeedItem = TWorkWithRelations & {
+    isLiked: boolean;
+};
