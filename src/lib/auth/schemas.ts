@@ -40,7 +40,14 @@ export const signUpSchema = z
 
     confirmPassword: z.string(),
     role: userRoleSchema,
-    acceptTerms: z.literal(true, {
+
+    country: z.string().min(1, "Выберите страну"),
+    state: z.string().optional(),
+    city: z.string().min(1, "Выберите город"),
+    latitude: z.number(),
+    longitude: z.number(),
+
+    acceptTerms: z.boolean().refine((val) => val === true, {
       message: "Вы должны принять условия",
     }),
   })

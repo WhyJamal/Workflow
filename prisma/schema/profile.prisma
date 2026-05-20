@@ -2,7 +2,11 @@ model MasterProfile {
   id          String  @id @default(cuid())
   bio         String?
   title       String?
+  country     String?
+  state       String?
   city        String?
+  latitude    Float?
+  longitude   Float?
   hourlyRate  Float?
   minBudget   Float?
   isVerified  Boolean @default(false)

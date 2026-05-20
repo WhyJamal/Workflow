@@ -4,20 +4,22 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpInput } from "@/lib/auth/schemas";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { PAGES } from "@/config/pages.config";
+import { LocationSelect } from "./location-select";
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import AuthInput from "./auth-input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { GoogleIcon } from "@/assets/icons/google-icon";
+import { AppleIcon } from "@/assets/icons/appale-icon";
+import { type Role, RoleStep } from "./sign-up-role-select";
+import { registerUser } from "@/services/auth-service";
+import { EyeIcon, EyeOffIcon, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function SignUpCard() {
   const router = useRouter();
@@ -26,9 +28,12 @@ export default function SignUpCard() {
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const [step, setStep] = useState<"role" | "form">("role");
+
   const {
     control,
     register,
+    setValue,
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
@@ -41,29 +46,36 @@ export default function SignUpCard() {
       password: "",
       confirmPassword: "",
       role: undefined,
-      acceptTerms: undefined,
+      country: "",
+      state: "",
+      city: "",
+      latitude: 0,
+      longitude: 0,
+      acceptTerms: false,
     },
   });
 
   const agreeTerms = watch("acceptTerms");
+  const selectedRole = watch("role");
+
+  const handleRoleSelect = (role: Role) => {
+    setValue("role", role);
+    setStep("form");
+  };
 
   const onSubmit = async (data: SignUpInput) => {
     setServerError(null);
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
 
-      const json = await res.json();
+    try {
+      const { res, json } = await registerUser(data);
 
       if (!res.ok) {
-        setServerError(json.message ?? "Ro'yxatdan o'tishda xatolik");
+        setServerError(json.message ?? "Ошибка регистрации");
         return;
       }
 
       setLastAuthMethod("credentials");
+
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
@@ -77,7 +89,7 @@ export default function SignUpCard() {
         router.refresh();
       }
     } catch {
-      setServerError("Serverga ulanishda xatolik yuz berdi");
+      setServerError("Ошибка подключения к серверу");
     }
   };
 
@@ -87,11 +99,42 @@ export default function SignUpCard() {
     await signIn("google", { callbackUrl: PAGES.APP });
   };
 
+  if (step === "role") {
+    return <RoleStep onSelect={handleRoleSelect} />;
+  }
+
   return (
     <div className="w-full max-w-xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-semibold text-gray-900 text-center mb-8">
-        Sign up to hire talent
-      </h1>
+      <div className="flex items-center gap-3 mb-8">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setStep("role")}
+          className="rounded-full dark:text-zinc-300"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white flex-1 text-center">
+          {selectedRole === "CLIENT"
+            ? "Зарегистрируйтесь, чтобы нанимать специалистов"
+            : "Зарегистрируйтесь, чтобы находить работу"}
+        </h1>
+        <span className="w-5" />
+      </div>
+
+      {/* Role badge */}
+      <div className="flex justify-center mb-6">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-[#14a800] dark:bg-green-900/30 dark:text-green-400">
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {selectedRole === "CLIENT" ? "Клиент" : "Мастер"}
+        </span>
+      </div>
 
       {serverError && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -99,53 +142,22 @@ export default function SignUpCard() {
         </div>
       )}
 
-      {/* Social buttons */}
       <div className="flex gap-3 mb-6">
-        {/* Apple */}
         <button
           type="button"
           className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded-full py-3 text-sm font-medium text-gray-900 bg-white hover:bg-gray-50 transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="currentColor"
-          >
-            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.56-1.32 3.1-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-          </svg>
+          <AppleIcon />
           Continue with Apple
         </button>
 
-        {/* Google */}
         <button
           type="button"
           onClick={handleGoogle}
           disabled={googleLoading}
           className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded-full py-3 text-sm font-medium text-white bg-[#4285F4] hover:bg-[#3367D6] transition-colors disabled:opacity-60"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 48 48"
-            className="h-4 w-4"
-          >
-            <path
-              fill="#FFC107"
-              d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
-            />
-            <path
-              fill="#FF3D00"
-              d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
-            />
-            <path
-              fill="#4CAF50"
-              d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-            />
-            <path
-              fill="#1976D2"
-              d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
-            />
-          </svg>
+          <GoogleIcon />
           {googleLoading ? "Please wait..." : "Continue with Google"}
         </button>
       </div>
@@ -159,56 +171,54 @@ export default function SignUpCard() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Hidden role field — value already set via setValue */}
+        <input type="hidden" {...register("role")} />
+
         {/* Name row */}
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              First name
-            </label>
-            <input
-              {...register("firstName")}
-              type="text"
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.firstName ? "border-red-500" : "border-gray-300"
-                }`}
-            />
+            <Label
+              htmlFor="firstName"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
+              Имя
+            </Label>
+            <AuthInput register={register} name="firstName" placeholder="Имя" />
             {errors.firstName && (
               <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
             )}
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last name
-            </label>
-            <input
-              {...register("lastName")}
-              type="text"
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.lastName ? "border-red-500" : "border-gray-300"
-                }`}
-            />
+            <Label
+              htmlFor="lastName"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
+              Фамилия
+            </Label>
+            <AuthInput register={register} name="lastName" placeholder="Фамилия" />
             {errors.lastName && (
               <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
             )}
           </div>
         </div>
 
-        {/* Work email */}
+        {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Work email address
-          </label>
-          <input
-            {...register("email")}
+          <Label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Адрес электронной почты
+          </Label>
+          <AuthInput
+            register={register}
+            name="email"
             type="email"
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+            placeholder="Адрес электронной почты"
           />
           {errors.email && (
             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-              <svg
-                className="h-3 w-3"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
+              <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -217,7 +227,7 @@ export default function SignUpCard() {
               </svg>
               {errors.email.message}{" "}
               <Link href="/sign-in" className="text-[#14a800] underline">
-                Want to log in?
+                Хотите войти?
               </Link>
             </p>
           )}
@@ -225,15 +235,18 @@ export default function SignUpCard() {
 
         {/* Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          <Label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Пароль
+          </Label>
           <div className="relative">
-            <input
-              {...register("password")}
+            <AuthInput
+              register={register}
+              name="password"
               type={showPassword ? "text" : "password"}
-              className={`w-full px-4 py-3 pr-12 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+              placeholder="Пароль"
             />
             <button
               type="button"
@@ -241,42 +254,7 @@ export default function SignUpCard() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                  />
-                </svg>
-              )}
+              {showPassword ? (<EyeOffIcon className="h-5 w-5" />) : (<EyeIcon className="h-5 w-5" />)}
             </button>
           </div>
           {errors.password && (
@@ -284,138 +262,92 @@ export default function SignUpCard() {
           )}
         </div>
 
-        {/* Confirm Password — hidden field, same style */}
+        {/* Confirm Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirm password
-          </label>
-          <input
-            {...register("confirmPassword")}
+          <Label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Подтвердите пароль
+          </Label>
+          <AuthInput
+            register={register}
+            name="confirmPassword"
+            placeholder="Подтвердите пароль"
             type="password"
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              }`}
           />
           {errors.confirmPassword && (
             <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
           )}
         </div>
 
-        {/* Country */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Country
-          </label>
           <div className="relative">
-            <select
-              className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#14a800] focus:border-transparent transition bg-white"
-              defaultValue="Uzbekistan"
-            >
-              <option value="Uzbekistan">Uzbekistan</option>
-              <option value="United States">United States</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Canada">Canada</option>
-              <option value="Germany">Germany</option>
-              <option value="Russia">Russia</option>
-              <option value="Kazakhstan">Kazakhstan</option>
-            </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
+            <LocationSelect
+              onChange={(loc) => {
+                setValue("country", loc.country);
+                setValue("state", loc.state ?? "");
+                setValue("city", loc.city);
+                setValue("latitude", loc.latitude);
+                setValue("longitude", loc.longitude);
+              }}
+              errors={{
+                country: errors.country,
+                city: errors.city,
+              }}
+            />
+            <input type="hidden" {...register("country")} />
+            <input type="hidden" {...register("state")} />
+            <input type="hidden" {...register("city")} />
+            <input type="hidden" {...register("latitude", { valueAsNumber: true })} />
+            <input type="hidden" {...register("longitude", { valueAsNumber: true })} />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Role
-          </label>
-
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="CLIENT">CLIENT</SelectItem>
-                    <SelectItem value="MASTER">MASTER</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            )}
-          />
-
-          {errors.role && (
-            <p className="text-red-500 text-xs mt-1">{errors.role.message}</p>
-          )}
-        </div>
-
         {/* Checkboxes */}
-        <div className="space-y-3 pt-1">
+        <div className="space-y-3 pt-1 dark:text-gray-300">
           <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#14a800] focus:ring-[#14a800] accent-[#14a800]"
-            />
-            <span className="text-sm text-gray-700">
-              Send me emails with tips on how to find talent that fits my needs.
-            </span>
+            <Checkbox id="sendemails" />
+            <Label htmlFor="sendemails" className="flex flex-wrap gap-1">
+              Отправляйте мне письма с советами о том, как находить специалистов, которые подходят под мои задачи.
+            </Label>
           </label>
 
           <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              {...register("acceptTerms")}
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#14a800] focus:ring-[#14a800] accent-[#14a800]"
-            />
-            <span className="text-sm text-gray-700">
-              Yes, I understand and agree to the{" "}
-              <a
-                href="/terms"
-                className="text-[#14a800] hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Workflow Terms of Service
-              </a>
-              , including the{" "}
-              <a
-                href="/user-agreement"
-                className="text-[#14a800] hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Workflow User Agreement
-              </a>{" "}
-              and{" "}
-              <a
-                href="/privacy-policy"
-                className="text-[#14a800] hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Privacy Policy
-              </a>
-              .
-            </span>
+            <div className="flex gap-2 items-start">
+              <Checkbox
+                id="terms"
+                checked={watch("acceptTerms")}
+                onCheckedChange={(value) => setValue("acceptTerms", !!value)}
+              />
+              <Label htmlFor="terms" className="flex flex-wrap gap-1">
+                Да, я понимаю и согласен с{" "}
+                <a href="/terms" className="text-[#14a800] hover:underline" target="_blank" rel="noopener noreferrer">
+                  Условиями предоставления услуг Workflow,
+                </a>
+                включая{" "}
+                <a
+                  href="/user-agreement"
+                  className="text-[#14a800] hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Пользовательское соглашение Workflow
+                </a>{" "}
+                и{" "}
+                <a
+                  href="/privacy-policy"
+                  className="text-[#14a800] hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Политика конфиденциальности
+                </a>
+                .
+              </Label>
+            </div>
           </label>
+
           {errors.acceptTerms && (
             <p className="text-red-500 text-xs">{errors.acceptTerms.message}</p>
           )}
@@ -431,11 +363,10 @@ export default function SignUpCard() {
         </button>
       </form>
 
-      {/* Already have account */}
       <p className="text-center text-sm text-gray-500 mt-5">
-        Already have an account?{" "}
+        Уже есть аккаунт?{" "}
         <Link href="/sign-in" className="text-[#14a800] font-medium hover:underline">
-          Log In
+          Войти
         </Link>
       </p>
     </div>
